@@ -2,7 +2,7 @@
 * @Author: Sun
 * @Date:   2020-06-29 14:45:49
 * @Last Modified by:   Sun
-* @Last Modified time: 2020-07-02 20:41:57
+* @Last Modified time: 2020-07-02 22:27:41
 */
 
 // D-H过程
@@ -157,31 +157,57 @@ void generate_client_key(int sockfd, unsigned char *aes_key)
 
 // void recv_message(aes_arg *arg)
 // {
+//     int sock = arg->sockfd;
+//     struct sockaddr_in client_addr = arg->client_addr;
 //     char recv_buffer[512] = {0};
 //     int recv_n = 0;
 //     // 接收数据
-//     while (recv_n = recv(arg->sockfd, recv_buffer, 511, 0) > 0)
+//     while (1)
 //     {
-//     	recv_buffer[recv_n]='\0';
-//     	unsigned int iv_len=32;
-// 	    unsigned int tag_len=16;
-//     	// unsigned int ct_len=recv_n-iv_len;
-//     	unsigned int ct_len=recv_n-iv_len-tag_len;
-//         unsigned char plain_text[256]={0};
-//         // unsigned char cipher_text[256+tag_len]={0};
-//         unsigned char cipher_text[256]={0};
-//         unsigned char tag[16]={0};
-//         unsigned char iv[32]={0};
+//         recv_n = recv(sock, recv_buffer, 512, 0);
+//         if (recv_n < 0)    // 接收出错
+//         {
+//             printf("客户端 %s:%d 接收消息错误\n", inet_ntoa(client_addr.sin_addr), client_addr.sin_port);
+//             perror("error: ");
+//             close(arg->sockfd);
+//             return;
+//         }
+//         else if (recv_n == 0)    //连接关闭
+//         {
+//             printf("客户端 %s:%d 连接关闭\n", inet_ntoa(client_addr.sin_addr), client_addr.sin_port);
+//             close(arg->sockfd);
+//             return;
+//         }
 
-//         memcpy(iv,recv_buffer,iv_len);
-//         memcpy(cipher_text,recv_buffer+iv_len,ct_len);
-//         memcpy(tag,recv_buffer+recv_n-tag_len,tag_len);
-//         cipher_text[ct_len]='\0';
-//         printf("\nct:\n");
-//         BIO_dump_fp(stdout,cipher_text,ct_len);
-//         decrypt(&(arg->aes_key), plain_text, ct_len,  cipher_text, iv, iv_len, tag, tag_len);
-//         printf("\npt:\n");
-//         BIO_dump_fp(stdout,plain_text,ct_len);
+//         // printf("recv_n: %d\n", recv_n);
+//         recv_buffer[recv_n] = '\0';
+//         unsigned int iv_len = 32;
+//         unsigned int tag_len = 16;
+//         // unsigned int ct_len=recv_n-iv_len;
+//         unsigned int ct_len = recv_n - iv_len - tag_len;
+//         unsigned char plain_text[256] = {0};
+//         // unsigned char cipher_text[256+tag_len]={0};
+//         unsigned char cipher_text[256] = {0};
+//         unsigned char tag[16] = {0};
+//         unsigned char iv[32] = {0};
+
+//         memcpy(iv, recv_buffer, iv_len);
+//         memcpy(cipher_text, recv_buffer + iv_len, ct_len);
+//         memcpy(tag, recv_buffer + recv_n - tag_len, tag_len);
+//         cipher_text[ct_len] = '\0';
+//         printf("\n来自客户端 %s:%d的消息:\n", inet_ntoa(client_addr.sin_addr), client_addr.sin_port);
+//         BIO_dump_fp(stdout, recv_buffer, recv_n);
+//         printf("\niv:\n");
+//         BIO_dump_fp(stdout, iv, iv_len);
+//         printf("\ntag:\n");
+//         BIO_dump_fp(stdout, tag, tag_len);
+//         printf("\ncipher_text:\n");
+//         BIO_dump_fp(stdout, cipher_text, ct_len);
+//         printf("\nkey:\n");
+//         BIO_dump_fp(stdout, arg->aes_key, 32);
+//         decrypt(arg->aes_key, plain_text, ct_len, cipher_text, iv, iv_len, tag, tag_len);
+//         printf("\nplain_text:\n");
+//         BIO_dump_fp(stdout, plain_text, ct_len);
 //     }
 // }
 
@@ -228,15 +254,27 @@ int send_message(aes_arg *arg)
 
 int main(int argc, char *argv[])
 {
-    if (argc != 2)
+    if (argc != 3)
     {
-        printf("请输入正确的命令行参数 命令格式： ./client [SERVER_IP_ADDRESS]\n");
+        printf("请输入正确的命令行参数 命令格式： ./client [SERVER_IP_ADDRESS] [CLIENT_IP_ADDRESS]\n");
         exit(-1);
     }
 
-    // 连接服务器
-    int sockfd;
+    int sockfd=0;
+    // 创建TCP套接字
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    {
+        perror("Error ");
+        exit(-1);
+    }
+    struct sockaddr_in client_addr;
+    memset(&client_addr, 0, sizeof(client_addr));    // 初始化
+    client_addr.sin_addr.s_addr = inet_addr(argv[2]);    // IP地址(命令行的第三个参数)
+    client_addr.sin_family = AF_INET;
+    client_addr.sin_port = 0;	// 任意端口
+    // 绑定	这里客户端之所以要绑定IP是因为放在了一台机器里模拟
+    // kali里添加了多张网卡 为了后面中间人攻击区别 所以客户端也绑定一下
+    if (bind(sockfd, (struct sockaddr *) &client_addr, sizeof(client_addr)) < 0)
     {
         perror("Error ");
         exit(-1);
