@@ -2,7 +2,7 @@
 * @Author: Sun
 * @Date:   2020-06-29 14:45:49
 * @Last Modified by:   Sun
-* @Last Modified time: 2020-07-02 22:27:41
+* @Last Modified time: 2020-07-06 17:48:15
 */
 
 // D-H过程
@@ -243,6 +243,7 @@ int send_message(aes_arg *arg)
     send_buffer[iv_len + pt_len + tag_len] = '\0';
     printf("\nsendbuffer:\n");
     BIO_dump_fp(stdout, send_buffer, iv_len + pt_len + tag_len);
+    printf("\n----------------------------------------------\n");
 
     if (send(arg->sockfd, send_buffer, strlen(send_buffer), 0) == -1)
     {
@@ -277,6 +278,7 @@ int main(int argc, char *argv[])
     if (bind(sockfd, (struct sockaddr *) &client_addr, sizeof(client_addr)) < 0)
     {
         perror("Error ");
+        close(sockfd);
         exit(-1);
     }
     struct sockaddr_in serv_addr;
@@ -288,6 +290,7 @@ int main(int argc, char *argv[])
     if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
     {
         perror("Error ");
+        close(sockfd);
         exit(-1);
     }
 

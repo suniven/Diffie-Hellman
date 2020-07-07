@@ -2,7 +2,7 @@
 * @Author: Sun
 * @Date:   2020-06-29 14:46:39
 * @Last Modified by:   Sun
-* @Last Modified time: 2020-07-02 21:34:01
+* @Last Modified time: 2020-07-06 17:48:39
 */
 
 // D-H过程
@@ -92,6 +92,7 @@ void recv_message(aes_arg *arg)
         decrypt(arg->aes_key, plain_text, ct_len, cipher_text, iv, iv_len, tag, tag_len);
         printf("\nplain_text:\n");
         BIO_dump_fp(stdout, plain_text, ct_len);
+        printf("\n----------------------------------------------\n");
     }
 }
 
@@ -208,7 +209,7 @@ int main(int argc, char *argv[])
 {
     if (argc != 2)
     {
-        printf("请输入正确的命令行参数 命令格式： ./server [IP_ADDRESS]\n");
+        printf("请输入正确的命令行参数 命令格式： ./server [SERVER_IP_ADDRESS]\n");
         exit(-1);
     }
     int server_sockfd, client_sockfd;
@@ -216,6 +217,7 @@ int main(int argc, char *argv[])
     if ((server_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         perror("Error ");
+        close(server_sockfd);
         exit(-1);
     }
     struct sockaddr_in server_addr;
@@ -227,6 +229,7 @@ int main(int argc, char *argv[])
     if (bind(server_sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0)
     {
         perror("Error ");
+        close(server_sockfd);
         exit(-1);
     }
     printf("服务器绑定至%s\n", inet_ntoa(server_addr.sin_addr));
