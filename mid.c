@@ -2,7 +2,7 @@
 * @Author: Sun
 * @Date:   2020-06-29 14:46:55
 * @Last Modified by:   Sun
-* @Last Modified time: 2020-07-07 13:42:18
+* @Last Modified time: 2020-07-08 20:38:47
 */
 
 // ----------------------------终端相关命令----------------------------------------
@@ -237,7 +237,7 @@ generate_m_to_s_key(int sockfd, unsigned char *m_to_s_key)
     mp_int primitive_root;    // 原根
     mp_init(&primitive_root);
     mp_set(&primitive_root, 2);
-    generate_p(sockfd, &p, &primitive_root);    // 生成素数p、找到原根g并发送给客户端
+    generate_p(sockfd, &p, &primitive_root);    // 生成素数p、找到原根g
 
     mp_int b;    // 客户端的私钥b
     mp_init(&b);
