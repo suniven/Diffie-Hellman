@@ -2,7 +2,7 @@
 * @Author: Sun
 * @Date:   2020-06-29 14:45:49
 * @Last Modified by:   Sun
-* @Last Modified time: 2020-07-06 17:48:15
+* @Last Modified time: 2020-07-08 20:36:32
 */
 
 // D-H过程
@@ -294,6 +294,8 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
+    // 进行身份检测
+
     // key
     unsigned char *aes_key = (unsigned char *) malloc(sizeof(unsigned char) * 32);
     // 生成iv(32字节)
@@ -342,6 +344,3 @@ int main(int argc, char *argv[])
     close(sockfd);
     return 0;
 }
-
-
-
