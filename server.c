@@ -2,7 +2,7 @@
 * @Author: Sun
 * @Date:   2020-06-29 14:46:39
 * @Last Modified by:   Sun
-* @Last Modified time: 2020-07-02 20:41:29
+* @Last Modified time: 2020-07-08 20:36:39
 */
 
 // D-H过程
@@ -92,36 +92,44 @@ void recv_message(aes_arg *arg)
         decrypt(arg->aes_key, plain_text, ct_len, cipher_text, iv, iv_len, tag, tag_len);
         printf("\nplain_text:\n");
         BIO_dump_fp(stdout, plain_text, ct_len);
+        printf("\n----------------------------------------------\n");
     }
 }
 
 // int send_message(aes_arg *arg)
 // {
 //     unsigned char plain_text[256] = {0};
-//     unsigned char cipher_text[256+16] = {0};
-//     unsigned char send_buffer[512]={0};
+//     unsigned char cipher_text[256 + 16] = {0};
+//     unsigned char send_buffer[512] = {0};
+//     unsigned char tag[16] = {0};
 //     printf("\n");
 //     scanf("%s", plain_text);
 //     // fgets(plain_text, 255, stdin);
-//     unsigned int pt_len=strlen(plain_text);
-//     unsigned int iv_len=32;
-//     unsigned int tag_len=16;
-//     encrypt(&(arg->aes_key), plain_text, pt_len, cipher_text, arg->aes_iv, iv_len, arg->aes_tag, tag_len);
-//     memcpy(cipher_text + pt_len, arg->aes_tag, tag_len);
+//     if (strcmp(plain_text, "quit") == 0)
+//     {
+//         return 1;
+//     }
+//     unsigned int pt_len = strlen(plain_text);
+//     unsigned int iv_len = 32;
+//     unsigned int tag_len = 16;
+//     encrypt(arg->aes_key, plain_text, pt_len, cipher_text, arg->aes_iv, iv_len, tag, tag_len);
+//     memcpy(cipher_text + pt_len, tag, tag_len);
 
 //     printf("\nplain_text: \n");
-//     BIO_dump_fp(stdout,plain_text,pt_len);
+//     BIO_dump_fp(stdout, plain_text, pt_len);
+//     printf("\ntag: \n");
+//     BIO_dump_fp(stdout, tag, tag_len);
 //     printf("\ncipher_text: \n");
-//     BIO_dump_fp(stdout,cipher_text,pt_len+tag_len);
+//     BIO_dump_fp(stdout, cipher_text, pt_len + tag_len);
 
 //     // [iv][ct|tag]
-//     memcpy(send_buffer,arg->aes_iv,iv_len);
-//     memcpy(send_buffer+iv_len,cipher_text,pt_len+tag_len);
-//     send_buffer[iv_len+pt_len+tag_len]='\0';
+//     memcpy(send_buffer, arg->aes_iv, iv_len);
+//     memcpy(send_buffer + iv_len, cipher_text, pt_len + tag_len);
+//     send_buffer[iv_len + pt_len + tag_len] = '\0';
 //     printf("\nsendbuffer:\n");
-//     BIO_dump_fp(stdout,send_buffer,iv_len+pt_len+tag_len);
+//     BIO_dump_fp(stdout, send_buffer, iv_len + pt_len + tag_len);
 
-//     if (send(arg->sockfd, send_buffer, strlen(send_buffer)+1, 0) == -1)
+//     if (send(arg->sockfd, send_buffer, strlen(send_buffer), 0) == -1)
 //     {
 //         perror("Error ");
 //         return -1;
@@ -201,7 +209,7 @@ int main(int argc, char *argv[])
 {
     if (argc != 2)
     {
-        printf("请输入正确的命令行参数 命令格式： ./server [IP_ADDRESS]\n");
+        printf("请输入正确的命令行参数 命令格式： ./server [SERVER_IP_ADDRESS]\n");
         exit(-1);
     }
     int server_sockfd, client_sockfd;
@@ -209,6 +217,7 @@ int main(int argc, char *argv[])
     if ((server_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         perror("Error ");
+        close(server_sockfd);
         exit(-1);
     }
     struct sockaddr_in server_addr;
@@ -220,6 +229,7 @@ int main(int argc, char *argv[])
     if (bind(server_sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0)
     {
         perror("Error ");
+        close(server_sockfd);
         exit(-1);
     }
     printf("服务器绑定至%s\n", inet_ntoa(server_addr.sin_addr));
@@ -270,4 +280,3 @@ int main(int argc, char *argv[])
     close(server_sockfd);
     return 0;
 }
-
